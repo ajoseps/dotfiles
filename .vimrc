@@ -12,9 +12,7 @@ call vundle#begin()
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
 " plugins
-Plugin 'vim-airline/vim-airline'
-Plugin 'vim-airline/vim-airline-themes'
-let g:airline#extensions#tagbar#enabled = 0
+Plugin 'itchyny/lightline.vim'
 Plugin 'Lokaltog/vim-easymotion'
 Plugin 'kien/ctrlp.vim'
 Plugin 'majutsushi/tagbar'
@@ -28,6 +26,14 @@ Plugin 'tomtom/tcomment_vim'
 Plugin 'vim-scripts/a.vim'
 Plugin 'octol/vim-cpp-enhanced-highlight'
 Plugin 'jelera/vim-javascript-syntax'
+Plugin 'moll/vim-node'
+Plugin 'sheerun/vim-polyglot'
+Plugin 'pangloss/vim-javascript'
+Plugin 'ludovicchabant/vim-gutentags'
+Plugin 'vim-scripts/taglist.vim'
+
+" Golang
+Plugin 'fatih/vim-go'
 " Python PEP8
 Plugin 'nvie/vim-flake8'
 
@@ -37,21 +43,19 @@ Plugin 'Valloric/YouCompleteMe'
 " Code Folding
 Plugin 'tmhedberg/SimpylFold'
 " see the docstrings for folded code
-let g:SimpylFold_docstring_preview=1
+let g:SimpylFold_docstring_preview=0
 
-" Auto Ctag on save/writes
-Plugin 'craigemery/vim-autotag'
 " colorschemes
 Plugin 'flazz/vim-colorschemes'
 Plugin 'sjl/badwolf'
+Plugin 'sainnhe/vim-color-forest-night'
+Plugin 'morhetz/gruvbox'
+Plugin 'altercation/vim-colors-solarized'
 call vundle#end()
 " Get that filetype stuff happening
 filetype on
 filetype plugin on
 filetype indent on
-" Turn on that syntax highlighting
-syntax enable
-syntax on
 " set omnicompletion on (Use you complete me instead)
 " set ofu=syntaxcomplete#Complete
 " Why is this not a default
@@ -129,8 +133,8 @@ set complete=.,w,b,t
 set incsearch
 " show line numbers
 set number
-" turn off
-set nohlsearch
+" turn on
+set hlsearch
 " use ant to build
 "set efm=%A\ %#[javac]\ %f:%l:\ %m,%-Z\ %#[javac]\ %p^,%-C%.%#
 set makeprg=make
@@ -168,27 +172,40 @@ nmap <silent> ,pa :make check<CR>
 " System default for mappings is now the "," character
 let mapleader = ","
 " set the colorscheme
-set t_Co=256
-colorscheme badwolf
+syntax enable
+colorscheme gruvbox 
+set background=dark
+let g:lightline = {'colorscheme' : 'gruvbox'}
 " Workaround to stop make/quickfix from creating a new file
 " set errorformat^=%-GIn\ file\ included\ %.%# 
 " Fix for C++11 lambdas
 let c_no_curly_error=1
 
-" Highlight ES6 template strings
-hi link javaScriptTemplateDelim String
-hi link javaScriptTemplateVar Text
-hi link javaScriptTemplateString String
 "-----------------------------------------------------------------------------
 " YCM Settings
 "-----------------------------------------------------------------------------
-let g:ycm_confirm_extra_conf = 0
 let g:ycm_autoclose_preview_window_after_completion = 1
 let g:ycm_autoclose_preview_window_after_insertion = 1
-let g:ycm_filetype_whitelist = { 'cpp' : 1, 'py' : 1 }
-let g:ycm_server_python_interpreter = '/usr/bin/python2.7'
+let g:ycm_filetype_whitelist = { 'cpp' : 1, 'py' : 1, 'go' : 1, 'h': 1 }
+let g:ycm_server_python_interpreter = '/usr/bin/python3'
+"" turn on completion in comments
+let g:ycm_complete_in_comments=1
+"" load ycm conf by default
+let g:ycm_confirm_extra_conf=0
+"" turn on tag completion
+let g:ycm_collect_identifiers_from_tags_files=1
+"" only show completion as a list instead of a sub-window
+set completeopt-=preview
+"" start completion from the first character
+let g:ycm_min_num_of_chars_for_completion=1
+"" don't cache completion items
+let g:ycm_cache_omnifunc=0
+"" complete syntax keywords
+let g:ycm_seed_identifiers_with_syntax=1
 nmap <silent> ,gf :YcmCompleter GoToDeclaration<CR>
 nmap <silent> ,gc :YcmCompleter GoToDefinitionElseDeclaration<CR>
+nnoremap <C-]> :YcmCompleter GoToDeclaration<CR>
+nnoremap <C-[> :YcmCompleter GoToDefinition<CR>
 "-----------------------------------------------------------------------------
 " Unite Settings
 "-----------------------------------------------------------------------------
@@ -232,14 +249,6 @@ let NERDTreeIgnore=[ '\.ncb$', '\.suo$', '\.vcproj\.CUTLERGROUP', '\.obj$',
             \ '\.embed\.manifest$', '\.embed\.manifest.res$',
             \ '\.intermediate\.manifest$', '^mt.dep$', '\.o$', '\.vcproj$', '\.so$', '\.so.1$', '\.so.1.0$']
 "-----------------------------------------------------------------------------
-" TagBar Plugin Settings
-"-----------------------------------------------------------------------------
-nnoremap <silent> <F9> :TagbarToggle<CR>
-"-----------------------------------------------------------------------------
-" EasyMotion Plugin Settings
-"-----------------------------------------------------------------------------
-let g:EasyMotion_leader_key = ','
-"-----------------------------------------------------------------------------
 " Python Configurations
 "-----------------------------------------------------------------------------
 " Autoindent
@@ -255,21 +264,16 @@ au BufNewFile,BufRead *.py
 " Flag Whitespace
 :highlight BadWhitespace ctermfg=16 ctermbg=253 guifg=#000000 guibg=#F8F8F0
 au BufRead,BufNewFile *.py,*.pyw,*.c,*.h match BadWhitespace /\s\+$/
-" python with virtualenv support
-py << EOF
-import os
-import sys
-if 'VIRTUAL_ENV' in os.environ:
-  project_base_dir = os.environ['VIRTUAL_ENV']
-  activate_this = os.path.join(project_base_dir, 'bin/activate_this.py')
-  execfile(activate_this, dict(__file__=activate_this))
-EOF
-let python_highlight_all=1
-set encoding=utf-8
-" Enable Code folding
-set foldmethod=indent
-set foldlevel=99
-" Enable folding with the spacebar
-nnoremap <space> za
-" Run python with F9
-nnoremap <buffer> <F9> :exec '!python' shellescape(@%, 1)<cr>
+
+
+" YCM DEBUG INFO
+let g:ycm_keep_logfiles = 1
+let g:ycm_log_level = 'debug'
+
+" Golang Linting
+let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck']
+let g:go_metalinter_autosave = 1
+
+" Javascript Linting/Formatting
+autocmd FileType javascript set formatprg=prettier\ --stdin
+autocmd BufWritePre *.js :normal gggqG
